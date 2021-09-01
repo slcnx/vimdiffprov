@@ -83,7 +83,7 @@ for i in $(ls $dir1); do
 			green "${origin} ${dest} same!"    | tee -a $temp
 		fi
 	else
-		red "$i not exists $dir2" | $temp
+		red "$i not exists $dir2"
 		ok=false
 		until $ok; do
 			red "whether copy ${origin} to ${dest} [yes/no] "; read confirm
