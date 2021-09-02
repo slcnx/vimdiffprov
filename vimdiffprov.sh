@@ -51,23 +51,21 @@ function process_list_files() {
 	done
 	for sub_dir2 in $(ls $dest_dir); do
                 # dir1 key 
-		if echo "${dir1[@]}" | grep -q "\b$dest_dir/${sub_dir2}\b" ; then
+		if echo "${dir1[@]}" | grep -q "\([[:space:]]\|^\)$dest_dir/${sub_dir2}\(\b\|$\)" ; then
 			continue
 		else
 			# 如果目录2的文件不在目录中关联的文件中，就记录
 			dir2_only_exists[${#dir2_only_exists[@]}]="${dest_dir}/$sub_dir2"
 		fi	
 	done
-	#echo 源key: 源值 ${!dir1[@]} ===== ${dir1[@]}
-	#echo ${!dir1_only_exists[@]} ===== ${dir1_only_exists[@]}
-	#echo ${!dir2_only_exists[@]} ==== ${dir2_only_exists[@]}
+	echo 源key: 源值 ${!dir1[@]} ===== ${dir1[@]}
+	echo ${!dir1_only_exists[@]} ===== ${dir1_only_exists[@]}
+	echo ${!dir2_only_exists[@]} ==== ${dir2_only_exists[@]}
 
 }
 function proccess_diff_both_file_1() {
 	origin=$(echo "$*" | awk  '{print $2}')
-	origin_dir=$(readlink -f $(dirname $origin))
 	dest=$(echo "$*" | awk  '{print $3}')
-	dest_dir=$(readlink -f $(dirname $dest))
 	
 	if [[ "$dest" =~ /#$ ]]; then
 		local f=$(echo "$*" | awk '{print $2}')
@@ -78,16 +76,7 @@ function proccess_diff_both_file_1() {
 	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
 		local f=$(echo "$*" | awk '{print $2}')
 	fi
-	if [ ! -f "$origin" -a ! -f "$dest" ]; then
-		#errortext[$f]="<both_not_file>"
-		true
-	elif [ ! -f "$origin"  ]; then
-		#errortext[$f]="<origin_not_file>"
-		true
-	elif [ ! -f "$dest" ]; then
-		#errortext[$f]="<dest_not_file>"
-		true
-	fi
+  
 	if [[ "$dest" =~ /#$ ]] || [[ "$origin" =~ /#$ ]]; then
 		errortext[$f]="${errortext[$f]}:<NotExists>"	
 	fi
@@ -102,9 +91,7 @@ function proccess_diff_both_file_1() {
 }
 function proccess_diff_both_file() {
 	origin=$(echo "$*" | awk  '{print $2}')
-	origin_dir=$(readlink -f $(dirname $origin))
 	dest=$(echo "$*" | awk  '{print $3}')
-	dest_dir=$(readlink -f $(dirname $dest))
 	
 	if [[ "$dest" =~ /#$ ]]; then
 		local f=$(echo "$*" | awk '{print $2}')
@@ -176,7 +163,11 @@ function proccess_diff_both_file() {
 	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
 		
 		if ! diff -q ${origin} ${dest} > /dev/null; then
-			vimdiff ${origin} ${dest} 
+      if [ -d $origin -o  -d $dest ]; then
+        red "please: ${script_name} $(readlink -f $origin) $(readlink -f $dest)  "
+      else
+			  vimdiff ${origin} ${dest} 
+      fi
 			green "${origin} ${dest} don't same, editing"
 			#errortext[$f]="${errortext[$f]}:<diff>"	
 		else
@@ -222,7 +213,6 @@ function process_edit_files_1() {
 		text[${#text[@]}]="$(printf "[ %20s %20s %12s] %s\n" $(basename $origin_dir)/# $i ${edited[$f]} ${errortext[$f]})"
 	done
 	for file in "${text[@]}"; do
-		clear
 		proccess_diff_both_file_1 $file 
 	done
 }
@@ -241,7 +231,7 @@ function process_edit_files() {
 		text[${#text[@]}]="$(printf "[ %20s %20s %12s] %s\n" $(basename $origin_dir)/# $i ${edited[$f]} ${errortext[$f]})"
 	done
 	select file in "${text[@]}"; do
-		clear
+    clear
 		proccess_diff_both_file $file 
 		break
 	done
@@ -280,6 +270,7 @@ main() {
 	declare -A errortext
 	CURRENT_DIR=$(readlink -f $(pwd))
 	ok=false
+  script_name=$(basename $0)
 
 	until $ok; do
 		read -p 'wheter improve ~/.vimrc' confirm
