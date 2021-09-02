@@ -63,6 +63,43 @@ function process_list_files() {
 	#echo ${!dir2_only_exists[@]} ==== ${dir2_only_exists[@]}
 
 }
+function proccess_diff_both_file_1() {
+	origin=$(echo "$*" | awk  '{print $2}')
+	origin_dir=$(readlink -f $(dirname $origin))
+	dest=$(echo "$*" | awk  '{print $3}')
+	dest_dir=$(readlink -f $(dirname $dest))
+	
+	if [[ "$dest" =~ /#$ ]]; then
+		local f=$(echo "$*" | awk '{print $2}')
+	fi
+	if [[ "$origin" =~ /#$ ]]; then
+		local f=$(echo "$*" | awk '{print $3}')
+	fi
+	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
+		local f=$(echo "$*" | awk '{print $2}')
+	fi
+	if [ ! -f "$origin" -a ! -f "$dest" ]; then
+		#errortext[$f]="<both_not_file>"
+		true
+	elif [ ! -f "$origin"  ]; then
+		#errortext[$f]="<origin_not_file>"
+		true
+	elif [ ! -f "$dest" ]; then
+		#errortext[$f]="<dest_not_file>"
+		true
+	fi
+	if [[ "$dest" =~ /#$ ]] || [[ "$origin" =~ /#$ ]]; then
+		errortext[$f]="${errortext[$f]}:<NotExists>"	
+	fi
+	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
+		
+		if ! diff -q ${origin} ${dest} > /dev/null; then
+			errortext[$f]="${errortext[$f]}:<CanChange>"	
+		else
+			true
+		fi
+	fi
+}
 function proccess_diff_both_file() {
 	origin=$(echo "$*" | awk  '{print $2}')
 	origin_dir=$(readlink -f $(dirname $origin))
@@ -83,14 +120,14 @@ function proccess_diff_both_file() {
 	if [ ! -f "$origin" -a ! -f "$dest" ]; then
 		red "$origin and $dest both aren't file,  can't diff"
 
-		errortext[$f]="<both_not_file>"
+		#errortext[$f]="<both_not_file>"
 		return 1
 	elif [ ! -f "$origin"  ]; then
 		red "$(readlink -f $(dirname $origin)) 目录中不存在文件 $(readlink -f ${dest}), 不能diff"
-		errortext[$f]="<origin_not_file>"
+		#errortext[$f]="<origin_not_file>"
 	elif [ ! -f "$dest" ]; then
 		red "$(readlink -f $(dirname $dest)) 目录中不存在文件 $(readlink -f ${origin}), 不能diff"
-		errortext[$f]="<dest_not_file>"
+		#errortext[$f]="<dest_not_file>"
 	fi
 	if [[ "$dest" =~ /#$ ]]; then
 		ok=false
@@ -98,17 +135,17 @@ function proccess_diff_both_file() {
 			echo -n "whether copy $(blue origin) $origin to $(red dest) $dest_dir? [yes or enter/no]: "; read confirm
 			case $confirm in
 			yes)
-				errortext[$f]="${errortext[$f]}:<copy>"	
+				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $origin $dest_dir
 				ok=true
 				;;
 			"")
-				errortext[$f]="${errortext[$f]}:<copy>"	
+				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $origin $dest_dir
 				ok=true
 				;;
 			no)
-				errortext[$f]="${errortext[$f]}:<nocopy>"	
+				#errortext[$f]="${errortext[$f]}:<nocopy>"	
 				ok=true
 				continue
 				;;
@@ -124,17 +161,17 @@ function proccess_diff_both_file() {
 			echo -n "whether copy $( red dest) $dest to $(blue origin) $origin_dir? [yes or enter/no]: "; read confirm
 			case $confirm in
 			yes)
-				errortext[$f]="${errortext[$f]}:<copy>"	
+				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $dest $origin_dir
 				ok=true
 				;;
 			"")
-				errortext[$f]="${errortext[$f]}:<copy>"	
+				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $dest $origin_dir
 				ok=true
 				;;
 			no)
-				errortext[$f]="${errortext[$f]}:<nocopy>"	
+				#errortext[$f]="${errortext[$f]}:<nocopy>"	
 				ok=true
 				continue 
 				;;
@@ -149,25 +186,25 @@ function proccess_diff_both_file() {
 		if ! diff -q ${origin} ${dest} > /dev/null; then
 			vimdiff ${origin} ${dest} 
 			green "${origin} ${dest} don't same, editing"
-			errortext[$f]="${errortext[$f]}:<diff>"	
+			#errortext[$f]="${errortext[$f]}:<diff>"	
 		else
 			ok=false
 			until $ok; do
-				errortext[$f]="<same>"
+				#errortext[$f]="<same>"
 				read -p "${origin} ${dest} is same, would you want to edit? [yes/no]:" yes_confirm
 				case $yes_confirm in
 					yes)
-						errortext[$f]="${errortext[$f]}:<diff>"	
+						#errortext[$f]="${errortext[$f]}:<diff>"	
 						vimdiff ${origin} ${dest} 
 						ok=true
 						;;
 					"")
-						errortext[$f]="${errortext[$f]}:<diff>"	
+						#errortext[$f]="${errortext[$f]}:<diff>"	
 						vimdiff ${origin} ${dest} 
 						ok=true
 						;;
 					no)
-						errortext[$f]="${errortext[$f]}:<nodiff>"	
+						#errortext[$f]="${errortext[$f]}:<nodiff>"	
 						ok=true
 						;;
 					*)
@@ -177,6 +214,25 @@ function proccess_diff_both_file() {
 			done
 		fi
 	fi
+}
+function process_edit_files_1() {
+	unset text
+	for i in ${!dir1[@]}; do
+		local f=$(echo "$i" | awk '{print $1}')
+		text[${#text[@]}]="$(printf "[ %20s %20s %12s] %s\n" $i ${dir1[$i]}             ${edited[$f]} ${errortext[$f]})"
+	done
+	for i in "${dir1_only_exists[@]}"; do
+		local f=$(echo "$i" | awk '{print $1}')
+		text[${#text[@]}]="$(printf "[ %20s %20s %12s] %s\n" $i $(basename $dest_dir)/# ${edited[$f]} ${errortext[$f]})"
+	done
+	for i in "${dir2_only_exists[@]}"; do
+		local f=$(echo "$i" | awk '{print $1}')
+		text[${#text[@]}]="$(printf "[ %20s %20s %12s] %s\n" $(basename $origin_dir)/# $i ${edited[$f]} ${errortext[$f]})"
+	done
+	for file in "${text[@]}"; do
+		clear
+		proccess_diff_both_file_1 $file 
+	done
 }
 function process_edit_files() {
 	unset text
@@ -270,12 +326,25 @@ main() {
 	fi	
 
 
-	process_list_files $1 $2
 	is_ok=false
 	until $is_ok; do
+		process_list_files $1 $2
 		usage
 		green "选择你要修正的文件, 输入序号即可: \n\t 1. 如果不相同直接进入编辑模式 \n\t 2. 相同会询问"
-		process_edit_files
+		process_edit_files_1
+	 	process_edit_files
+		unset dir1
+		unset dir1_only_exists
+		unset dir2_only_exists
+		unset edited
+		unset text
+		unset errortext
+		declare -A dir1
+		declare -A dir1_only_exists
+		declare -A dir2_only_exists
+		declare -A edited
+		declare -A text
+		declare -A errortext
 	done
 }
 
