@@ -117,18 +117,6 @@ function proccess_diff_both_file() {
 	fi
 	edited[$f]="edited"
 	
-	if [ ! -f "$origin" -a ! -f "$dest" ]; then
-		red "$origin and $dest both aren't file,  can't diff"
-
-		#errortext[$f]="<both_not_file>"
-		return 1
-	elif [ ! -f "$origin"  ]; then
-		red "$(readlink -f $(dirname $origin)) 目录中不存在文件 $(readlink -f ${dest}), 不能diff"
-		#errortext[$f]="<origin_not_file>"
-	elif [ ! -f "$dest" ]; then
-		red "$(readlink -f $(dirname $dest)) 目录中不存在文件 $(readlink -f ${origin}), 不能diff"
-		#errortext[$f]="<dest_not_file>"
-	fi
 	if [[ "$dest" =~ /#$ ]]; then
 		ok=false
 		until $ok; do
@@ -137,11 +125,13 @@ function proccess_diff_both_file() {
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $origin $dest_dir
+				sleep 3
 				ok=true
 				;;
 			"")
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $origin $dest_dir
+				sleep 3
 				ok=true
 				;;
 			no)
@@ -163,11 +153,13 @@ function proccess_diff_both_file() {
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $dest $origin_dir
+				sleep 3
 				ok=true
 				;;
 			"")
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				cp -a $dest $origin_dir
+				sleep 3
 				ok=true
 				;;
 			no)
