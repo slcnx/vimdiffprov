@@ -82,7 +82,7 @@ function proccess_diff_both_file_1() {
 	fi
 	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
 		
-		if ! diff -q ${origin} ${dest} > /dev/null; then
+		if ! diff -r -q ${origin} ${dest} > /dev/null; then
 			errortext[$f]="${errortext[$f]}:<CanChange>"	
 		else
 			true
@@ -107,7 +107,7 @@ function proccess_diff_both_file() {
 	if [[ "$dest" =~ /#$ ]]; then
 		ok=false
 		until $ok; do
-			echo -n "whether copy $(blue origin) $origin to $(red dest) $dest_dir? [yes or enter/no]: "; read confirm
+			echo -n "whether copy $(blue origin) $origin to $(red dest) $dest_dir or   $(red "input delete") to delete $origin? [yes or enter/no or delete]: "; read confirm
 			case $confirm in
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
@@ -120,6 +120,12 @@ function proccess_diff_both_file() {
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				echo cp -a $origin $dest_dir
 				cp -a $origin $dest_dir
+				sleep 1
+				ok=true
+				;;
+			delete)
+				echo rm -i $origin
+				rm -i $origin
 				sleep 1
 				ok=true
 				;;
@@ -137,7 +143,7 @@ function proccess_diff_both_file() {
 	if [[ "$origin" =~ /#$ ]]; then
 		ok=false
 		until $ok; do
-			echo -n "whether copy $( red dest) $dest to $(blue origin) $origin_dir? [yes or enter/no]: "; read confirm
+			echo -n "whether copy $( red dest) $dest to $(blue origin) $origin_dir or   $(red "input delete") to delete $dest? [yes or enter/no or delete]: "; read confirm
 			case $confirm in
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
@@ -150,6 +156,12 @@ function proccess_diff_both_file() {
 				#errortext[$f]="${errortext[$f]}:<copy>"	
 				echo cp -a $dest $origin_dir
 				cp -a $dest $origin_dir
+				sleep 1
+				ok=true
+				;;
+			delete)
+				echo rm -i $dest
+				rm -i $dest
 				sleep 1
 				ok=true
 				;;
