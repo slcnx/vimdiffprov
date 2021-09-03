@@ -58,9 +58,9 @@ function process_list_files() {
 			dir2_only_exists[${#dir2_only_exists[@]}]="${dest_dir}/$sub_dir2"
 		fi	
 	done
-	echo 源key: 源值 ${!dir1[@]} ===== ${dir1[@]}
-	echo ${!dir1_only_exists[@]} ===== ${dir1_only_exists[@]}
-	echo ${!dir2_only_exists[@]} ==== ${dir2_only_exists[@]}
+	#echo 源key: 源值 ${!dir1[@]} ===== ${dir1[@]}
+	#echo ${!dir1_only_exists[@]} ===== ${dir1_only_exists[@]}
+	#echo ${!dir2_only_exists[@]} ==== ${dir2_only_exists[@]}
 
 }
 function proccess_diff_both_file_1() {
@@ -111,14 +111,16 @@ function proccess_diff_both_file() {
 			case $confirm in
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
+				echo cp -a $origin $dest_dir
 				cp -a $origin $dest_dir
-				sleep 3
+				sleep 1
 				ok=true
 				;;
 			"")
 				#errortext[$f]="${errortext[$f]}:<copy>"	
+				echo cp -a $origin $dest_dir
 				cp -a $origin $dest_dir
-				sleep 3
+				sleep 1
 				ok=true
 				;;
 			no)
@@ -139,14 +141,16 @@ function proccess_diff_both_file() {
 			case $confirm in
 			yes)
 				#errortext[$f]="${errortext[$f]}:<copy>"	
+				echo cp -a $dest $origin_dir
 				cp -a $dest $origin_dir
-				sleep 3
+				sleep 1
 				ok=true
 				;;
 			"")
 				#errortext[$f]="${errortext[$f]}:<copy>"	
+				echo cp -a $dest $origin_dir
 				cp -a $dest $origin_dir
-				sleep 3
+				sleep 1
 				ok=true
 				;;
 			no)
