@@ -39,7 +39,7 @@ blue() {
 function process_list_files() {
 	origin_dir=$1
 	dest_dir=$2
-	for sub_dir1 in $(ls -A $origin_dir); do
+	for sub_dir1 in $(ls -A $origin_dir | grep -v '.git'); do
 		if [ -e $dest_dir/$sub_dir1 ]; then
 			# 目录1和目录2有相同的文件，就关联
 			# echo dir1["${origin_dir}/$sub_dir1"]="${dest_dir}/$sub_dir1"
@@ -49,7 +49,7 @@ function process_list_files() {
 			dir1_only_exists[${#dir1_only_exists[@]}]="${origin_dir}/$sub_dir1"
 		fi
 	done
-	for sub_dir2 in $(ls -A $dest_dir); do
+	for sub_dir2 in $(ls -A $dest_dir | grep -v '.git'); do
                 # dir1 key 
 		if echo "${dir1[@]}" | grep -q "\([[:space:]]\|^\)$dest_dir/${sub_dir2}\(\b\|$\)" ; then
 			continue
