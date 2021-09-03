@@ -9,7 +9,7 @@ if &diff
   map ] ]c
 " https://vi.stackexchange.com/questions/10897/how-do-i-customize-vimdiff-colors/10898#10898
 hi DiffAdd      ctermfg=NONE          ctermbg=LightGrey
-hi DiffChange   ctermfg=NONE          ctermbg=NONE
+hi DiffChange   ctermfg=NONE          ctermbg=LightGreen
 hi DiffDelete   ctermfg=LightBlue     ctermbg=Red
 hi DiffText     ctermfg=Yellow        ctermbg=Red
 " enable mouse: mouse=a ; disable mouse: mouse=""
