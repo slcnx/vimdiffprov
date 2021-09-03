@@ -259,6 +259,10 @@ blue "
 	do(diff obtain) 获取另一个窗口的差异。一般在不可选择的下一行执行.
 	进行do之后，可以命令行模式 u 撤回
 	进行dp之后，需要光标切换到对应窗口，再 u撤回
+	
+	单行应用修改:
+	- yy -> c-w w -> p
+	- Visual line -> :diffput/:diffget
 
 	# 5. 刷新修改
 	:diffupdate 重新刷新diff
