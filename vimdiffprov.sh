@@ -178,12 +178,12 @@ function proccess_diff_both_file() {
 	fi
 	if [[ ! "$origin" =~ /#$ ]] && [[ ! "$dest" =~ /#$ ]]; then
 		
-		if ! diff -q ${origin} ${dest} > /dev/null; then
-      if [ -d $origin -o  -d $dest ]; then
-        red "please: ${script_name} $(readlink -f $origin) $(readlink -f $dest)  "
-      else
-			  vimdiff ${origin} ${dest} 
-      fi
+		if ! diff -r -q ${origin} ${dest} > /dev/null; then
+		      if [ -d $origin -o  -d $dest ]; then
+			red "please: ${script_name} $(readlink -f $origin) $(readlink -f $dest)  "
+		      else
+					  vimdiff ${origin} ${dest} 
+		      fi
 			green "${origin} ${dest} don't same, editing"
 			#errortext[$f]="${errortext[$f]}:<diff>"	
 		else
